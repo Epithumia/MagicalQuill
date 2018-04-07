@@ -24,6 +24,19 @@ Cet utilitaire permet de découper les fichiers d'impression de Parcoursup
 L'utilitaire **decoupe-psup** permet de saucissonner un fichier issu
 de l'impression.
 
+Utilisation seule :
+
+```
+decoupe-psup [-o DIR] [-p] [-t] [-v] [-h] fichier
+
+Options:
+  -o DIR      Dossier de sortie des fichiers individuels.
+  -v          Affiche la progression.
+  -p          Extrait les projets de formation au format pdf.
+  -t          Extrait les projets de formation au format texte.
+  -h, --help  Affiche le message d'aide et termine.
+```
+
 L'utilitaire **process.sh** permet de ranger facilement les résultats et de
 générer des fichiers textes comprenant les parcours de formation motivés
 (anciennement lettres de motivation). C'est le programme qu'il faut appeler.
@@ -44,3 +57,4 @@ Ou pour mettre à jour seulement un des fichiers :
 
 * 0.2 Retrait de la nécessité d'avoir pdftk installé
 * 0.2.1 decoupe-psup peut maintenant extraire les projets de formation motivés
+* 0.2.2 projets de formation extraits en pdf ou en texte

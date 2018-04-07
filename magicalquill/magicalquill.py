@@ -20,7 +20,9 @@ def vprint(str, verbose):
         print(str)
 
 
-def write_dossiers(input_pdf, pp, pf, nb_pages, out_dir, verbose, projet):
+def write_dossiers(input_pdf, pp, pf, nb_pages, out_dir, opt):
+    verbose = opt.verbose
+    projet = opt.projet_pdf or opt.projet_texte
     with open(input_pdf, 'rb') as f:
         pdf = PyPDF2.PdfFileReader(f)
         vprint('éclatement du pdf...', verbose)
@@ -38,12 +40,19 @@ def write_dossiers(input_pdf, pp, pf, nb_pages, out_dir, verbose, projet):
                 writer.write(w)
     if projet:
         for i in range(len(pf)):
-            if i % 100 == 0:
-                vprint('%d/%s (%s)' % (i + 1, len(pf) - 1, pf[i][1]), verbose)
-            with open(out_dir + '/' + pf[i][1], 'wb') as w:
-                writer = PyPDF2.PdfFileWriter()
-                writer.addPage(pdf.getPage(pf[i][0]))
-                writer.write(w)
+            if opt.projet_pdf:
+                if i % 100 == 0:
+                    vprint('%d/%s (%s)' % (i + 1, len(pf) - 1, pf[i][1]), verbose)
+                with open(out_dir + '/' + pf[i][1], 'wb') as w:
+                    writer = PyPDF2.PdfFileWriter()
+                    writer.addPage(pdf.getPage(pf[i][0]))
+                    writer.write(w)
+            if opt.projet_texte:
+                f = pf[i][1].split('.pdf')[0] + '.txt'
+                if i % 100 == 0:
+                    vprint('%d/%s (%s)' % (i + 1, len(pf) - 1, f), verbose)
+                with open(out_dir + '/' + f, 'w') as w:
+                    w.write(pf[i][2])
 
 
 def main():
@@ -53,12 +62,15 @@ def main():
     :return: codes de sortie standards.
     """
     # noinspection SpellCheckingInspection
-    usage = 'usage: %prog [-o DIR] [-h] fichier'
+    usage = 'usage: %prog [-o DIR] [-p] [-t] [-v] [-h] fichier'
     parser = optparse.OptionParser(usage=usage, add_help_option=False)
     parser.add_option('-o', dest="outdir", help="Dossier de sortie des fichiers individuels.", metavar="DIR",
                       default="output")
     parser.add_option('-v', dest="verbose", action="store_true", default=False, help="Affiche la progression.")
-    parser.add_option('-p', dest="projet", action="store_true", default=False, help="Extrait les projets de formation.")
+    parser.add_option('-p', dest="projet_pdf", action="store_true", default=False,
+                      help="Extrait les projets de formation au format pdf.")
+    parser.add_option('-t', dest="projet_texte", action="store_true", default=False,
+                      help="Extrait les projets de formation au format texte.")
     parser.add_option('-h', '--help', action='help',
                       help="Affiche ce message d'aide et termine.")
     (opt, args) = parser.parse_args()
@@ -66,9 +78,9 @@ def main():
         parser.error("Mauvais nombre de paramètres.")
 
     input_pdf = args[0]
-    outdir = opt.outdir
+    out_dir = opt.outdir
     verbose = opt.verbose
-    projet = opt.projet
+    projet = opt.projet_pdf or opt.projet_texte
 
     vprint('Traitement de %s...' % input_pdf, verbose)
 
@@ -98,7 +110,7 @@ def main():
                 pf.append((p, pf_filename, pfm))
         vprint('%d candidats' % len(pp), verbose)
 
-    write_dossiers(input_pdf, pp, pf, nb_pages, outdir, verbose, projet)
+    write_dossiers(input_pdf, pp, pf, nb_pages, out_dir, opt)
 
 
 if __name__ == '__main__':
