@@ -3,3 +3,5 @@
 
 # PyCharm
 .idea/
+/MagicalQuill.egg-info/
+/dist/
