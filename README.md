@@ -9,9 +9,12 @@ Outil pour traiter les dossiers PDF des candidats Parcoursup
 * PyPDF2 (installé par pip)
 * pdftotext (installé par pip)
 
+Pour extraire les projets au format texte via process.sh, 
+il faut également disposer de l'utilitaire pdftotext.
+
 ## Installation avec pip
 
-pip install git+https://github.com/Epithumia/MagicalQuill
+    pip install git+https://github.com/Epithumia/MagicalQuill
 
 # Utilisation
 
@@ -37,3 +40,7 @@ Ou pour mettre à jour seulement un des fichiers :
 
     ./process.sh FORMATION_INTIALE_INFO
 
+# Versions
+
+* 0.2 Retrait de la nécessité d'avoir pdftk installé
+* 0.2.1 decoupe-psup peut maintenant extraire les projets de formation motivés
