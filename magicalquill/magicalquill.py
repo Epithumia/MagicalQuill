@@ -38,7 +38,7 @@ def main():
     print('Traitement de %s...' % input_pdf)
 
     with open(input_pdf, 'rb') as f:
-        pdf = pdftotext.PDF(f, password=None)
+        pdf = pdftotext.PDF(f, password='')
         nb_pages = len(pdf)
         print('%d pages' % nb_pages)
         pp = []  # indices de la premieres page de chaque dossier
