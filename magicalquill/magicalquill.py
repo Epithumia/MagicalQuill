@@ -20,10 +20,15 @@ def vprint(str, verbose):
         print(str)
 
 
-def write_dossiers(input_pdf, pp, pf, pfa, nb_pages, out_dir, opt):
+def write_dossiers(input_pdf, indices, nb_pages, out_dir, opt):
+    pp = indices['pp']
+    pf = indices['pf']
+    pfa = indices['pfa']
+    pb = indices['pb']
     verbose = opt.verbose
     projet = opt.projet_pdf or opt.projet_texte
     fiche_avenir = opt.fiche_avenir
+    bulletins = opt.bulletins
     with open(input_pdf, 'rb') as f:
         pdf = PyPDF2.PdfFileReader(f)
         vprint('Eclatement du pdf...', verbose)
@@ -64,6 +69,17 @@ def write_dossiers(input_pdf, pp, pf, pfa, nb_pages, out_dir, opt):
                 writer = PyPDF2.PdfFileWriter()
                 writer.addPage(pdf.getPage(pfa[i][0]))
                 writer.write(w)
+    if bulletins:
+        vprint('Extraction des bulletins...', verbose)
+        for i in range(len(pb)):
+            if i % 100 == 0:
+                vprint('%d/%s (%s)' % (i + 1, len(pb) - 1, pb[i][2]), verbose)
+            with open(out_dir + '/' + pb[i][2], 'wb') as w:
+                writer = PyPDF2.PdfFileWriter()
+                for p in range(pb[i][0], pb[i][1] + 1):
+                    writer.addPage(pdf.getPage(p))
+                writer.write(w)
+
 
 def main():
     """
@@ -83,6 +99,8 @@ def main():
                       help="Extrait les projets de formation au format texte.")
     parser.add_option('-a', dest="fiche_avenir", action="store_true", default=False,
                       help="Extrait les Fiches Avenir au format pdf.")
+    parser.add_option('-b', dest="bulletins", action="store_true", default=False,
+                      help="Extrait les bulletins au format pdf.")
     parser.add_option('-h', '--help', action='help',
                       help="Affiche ce message d'aide et termine.")
     (opt, args) = parser.parse_args()
@@ -94,6 +112,7 @@ def main():
     verbose = opt.verbose
     projet = opt.projet_pdf or opt.projet_texte
     fiche_avenir = opt.fiche_avenir
+    bulletins = opt.bulletins
 
     vprint('Traitement de %s...' % input_pdf, verbose)
 
@@ -101,10 +120,17 @@ def main():
         pdf = pdftotext.PDF(f, password='')
         nb_pages = len(pdf)
         vprint('%d pages' % nb_pages, verbose)
+        indices = {}
         pp = []  # indices de la premieres page de chaque dossier
         pf = []  # indices de la page du projet de formation motivé
         pfa = []  # indices de la page de la Fiche Avenir
+        pb = []  # indices de la 1e page des bulletins
         out_filename = ''
+        bu_filename = ''
+        bulletin_start = False
+        # Le hack ci-dessous est horrible. On détecte la fin de la section des bulletins
+        # en cherchant la ligne horizontale qui nest pas en bas de page
+        bulletin_end = '_____________________________________________________________________________________________________________________________'
         for p in range(0, nb_pages):
             if (p + 1) % 100 == 0:
                 vprint('page %d...' % int(p + 1), verbose)
@@ -125,9 +151,20 @@ def main():
             if fiche_avenir and txt[0] == 'Appréciations' and txt[2] == 'professeurs':
                 fa_filename = out_filename.split('.pdf')[0] + ' - Fiche_Avenir.pdf'
                 pfa.append((p, fa_filename))
-        vprint('%d candidats' % len(pp), verbose)
+            if bulletins and txt[0] == 'Bulletins' and txt[1] == 'scolaires' and not bulletin_start:
+                bu_filename = out_filename.split('.pdf')[0] + ' - Bulletins.pdf'
+                bulletin_start = p
+            if bulletin_start and bulletin_end in page[:-1]:
+                pb.append((bulletin_start, p, bu_filename))
+                bulletin_start = False
 
-    write_dossiers(input_pdf, pp, pf, pfa, nb_pages, out_dir, opt)
+        vprint('%d candidats' % len(pp), verbose)
+        indices['pp'] = pp
+        indices['pf'] = pf
+        indices['pfa'] = pfa
+        indices['pb'] = pb
+
+    write_dossiers(input_pdf, indices, nb_pages, out_dir, opt)
 
 
 if __name__ == '__main__':
