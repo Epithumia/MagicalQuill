@@ -6,7 +6,7 @@
 
 E. Viennet 2014-04-12
 J.-C. Dubacq 2015--2018
-R. Lopez 2018-04
+R. Lopez 2018-2019
 """
 import optparse
 import os
@@ -20,12 +20,13 @@ def vprint(str, verbose):
         print(str)
 
 
-def write_dossiers(input_pdf, pp, pf, nb_pages, out_dir, opt):
+def write_dossiers(input_pdf, pp, pf, pfa, nb_pages, out_dir, opt):
     verbose = opt.verbose
     projet = opt.projet_pdf or opt.projet_texte
+    fiche_avenir = opt.fiche_avenir
     with open(input_pdf, 'rb') as f:
         pdf = PyPDF2.PdfFileReader(f)
-        vprint('éclatement du pdf...', verbose)
+        vprint('Eclatement du pdf...', verbose)
         pp.append((nb_pages, None))
         if not (os.path.isdir(out_dir)):
             os.mkdir(out_dir)
@@ -39,6 +40,7 @@ def write_dossiers(input_pdf, pp, pf, nb_pages, out_dir, opt):
                     writer.addPage(pdf.getPage(np))
                 writer.write(w)
     if projet:
+        vprint('Extraction des avis motivés...', verbose)
         for i in range(len(pf)):
             if opt.projet_pdf:
                 if i % 100 == 0:
@@ -53,7 +55,15 @@ def write_dossiers(input_pdf, pp, pf, nb_pages, out_dir, opt):
                     vprint('%d/%s (%s)' % (i + 1, len(pf) - 1, f), verbose)
                 with open(out_dir + '/' + f, 'w') as w:
                     w.write(pf[i][2])
-
+    if fiche_avenir:
+        vprint('Extraction des Fiches Avenir...', verbose)
+        for i in range(len(pfa)):
+            if i % 100 == 0:
+                vprint('%d/%s (%s)' % (i + 1, len(pfa) - 1, pfa[i][1]), verbose)
+            with open(out_dir + '/' + pfa[i][1], 'wb') as w:
+                writer = PyPDF2.PdfFileWriter()
+                writer.addPage(pdf.getPage(pfa[i][0]))
+                writer.write(w)
 
 def main():
     """
@@ -71,6 +81,8 @@ def main():
                       help="Extrait les projets de formation au format pdf.")
     parser.add_option('-t', dest="projet_texte", action="store_true", default=False,
                       help="Extrait les projets de formation au format texte.")
+    parser.add_option('-a', dest="fiche_avenir", action="store_true", default=False,
+                      help="Extrait les Fiches Avenir au format pdf.")
     parser.add_option('-h', '--help', action='help',
                       help="Affiche ce message d'aide et termine.")
     (opt, args) = parser.parse_args()
@@ -81,6 +93,7 @@ def main():
     out_dir = opt.outdir
     verbose = opt.verbose
     projet = opt.projet_pdf or opt.projet_texte
+    fiche_avenir = opt.fiche_avenir
 
     vprint('Traitement de %s...' % input_pdf, verbose)
 
@@ -90,6 +103,7 @@ def main():
         vprint('%d pages' % nb_pages, verbose)
         pp = []  # indices de la premieres page de chaque dossier
         pf = []  # indices de la page du projet de formation motivé
+        pfa = []  # indices de la page de la Fiche Avenir
         out_filename = ''
         for p in range(0, nb_pages):
             if (p + 1) % 100 == 0:
@@ -106,11 +120,14 @@ def main():
                 pp.append((p, out_filename))
             if projet and txt[0] == 'Projet' and txt[2] == 'formation' and txt[3] == 'motivé':
                 pf_filename = out_filename.split('.pdf')[0] + ' - Projet_Formation.pdf'
-                pfm = '\n'.join(page[7:-4])
+                pfm = '\n'.join(page[7:-1])
                 pf.append((p, pf_filename, pfm))
+            if fiche_avenir and txt[0] == 'Appréciations' and txt[2] == 'professeurs':
+                fa_filename = out_filename.split('.pdf')[0] + ' - Fiche_Avenir.pdf'
+                pfa.append((p, fa_filename))
         vprint('%d candidats' % len(pp), verbose)
 
-    write_dossiers(input_pdf, pp, pf, nb_pages, out_dir, opt)
+    write_dossiers(input_pdf, pp, pf, pfa, nb_pages, out_dir, opt)
 
 
 if __name__ == '__main__':
