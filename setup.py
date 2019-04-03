@@ -7,7 +7,7 @@ requires = [
 
 setup(
     name="MagicalQuill",
-    version="0.2.2",
+    version="0.2.4",
     description="Outil pour traiter les dossiers PDF des candidats ParcourSup.",
     url="https://github.com/Epithumia/MagicalQuill",
     packages=['magicalquill'],

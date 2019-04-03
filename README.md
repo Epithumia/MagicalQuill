@@ -34,6 +34,8 @@ Options:
   -v          Affiche la progression.
   -p          Extrait les projets de formation au format pdf.
   -t          Extrait les projets de formation au format texte.
+  -f          Extrait les Fiches Avenir au format pdf.
+  -b          Extrait les bulletins au format pdf.
   -h, --help  Affiche le message d'aide et termine.
 ```
 
@@ -58,3 +60,5 @@ Ou pour mettre à jour seulement un des fichiers :
 * 0.2 Retrait de la nécessité d'avoir pdftk installé
 * 0.2.1 decoupe-psup peut maintenant extraire les projets de formation motivés
 * 0.2.2 projets de formation extraits en pdf ou en texte
+* 0.2.3 fiches avenir extraites en pdf
+* 0.2.4 bulletins extraits en pdf
