@@ -27,7 +27,7 @@ de l'impression.
 Utilisation seule :
 
 ```
-decoupe-psup [-o DIR] [-p] [-t] [-v] [-h] fichier
+decoupe-psup [-o DIR] [-p] [-t] [-f] [-b] [-v] [-h] fichier
 
 Options:
   -o DIR      Dossier de sortie des fichiers individuels.
