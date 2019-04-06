@@ -88,7 +88,7 @@ def main():
     :return: codes de sortie standards.
     """
     # noinspection SpellCheckingInspection
-    usage = 'usage: %prog [-o DIR] [-p] [-t] [-v] [-h] fichier'
+    usage = 'usage: %prog [-o DIR] [-p] [-t] [-a] [-b] [-v] [-h] fichier'
     parser = optparse.OptionParser(usage=usage, add_help_option=False)
     parser.add_option('-o', dest="outdir", help="Dossier de sortie des fichiers individuels.", metavar="DIR",
                       default="output")
